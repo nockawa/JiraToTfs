@@ -13,6 +13,7 @@ namespace TechTalk.JiraRestClient
             customfield_10800 = "";
             customfield_10007 = "";
             customfield_10004 = "";
+            customfield_10008 = "";
             updated = new DateTime();
             created = new DateTime();
             resolutiondate = new DateTime();
@@ -45,6 +46,7 @@ namespace TechTalk.JiraRestClient
         public DateTime resolutiondate { get; set; }
         // ("Epic")
         public string customfield_10800 { get; set; }
+        public string customfield_10008 { get; set; }
         // ("Sprint")
         public string customfield_10007 { get; set; }
         // ("Story Points")

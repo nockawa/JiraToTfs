@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -53,7 +54,7 @@ namespace TicketImporter
         public bool IsSameUser(string user)
         {
             bool isSame = false,
-                isEmail = Regex.IsMatch(user,
+                isEmail = Regex.IsMatch(user.ToLowerInvariant(),
                     @"^(?("")("".+?(?<!\\)""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))" +
                     @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$");
             if (isEmail != true)
@@ -74,6 +75,10 @@ namespace TicketImporter
                     {
                         isSame = true;
                     }
+                }
+                else if (String.Compare(DisplayName, user, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0)
+                {
+                    isSame = true;
                 }
             }
             else

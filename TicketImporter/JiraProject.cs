@@ -136,7 +136,7 @@ namespace TicketImporter
                     jiraTicket.fields.assignee.name,
                     jiraTicket.fields.assignee.emailAddress);
 
-                ticket.Epic = jiraTicket.fields.customfield_10800;
+                ticket.Epic = jiraTicket.fields.customfield_10008;
                 ticket.ExternalReference = jiraTicket.key;
                 ticket.Url = jiraServer + "/browse/" + jiraTicket.key;
                 int.TryParse(jiraTicket.fields.customfield_10004, out ticket.StoryPoints);

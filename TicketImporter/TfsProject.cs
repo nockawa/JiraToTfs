@@ -684,7 +684,7 @@ namespace TicketImporter
                     }
                 }
             }
-
+            
             if (source.HasLinks)
             {
                 var workItemStore = (WorkItemStore) tfs.GetService(typeof (WorkItemStore));
