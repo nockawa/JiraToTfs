@@ -322,6 +322,7 @@ namespace TicketImporter
             }
 
             var c = new StringBuilder();
+            var first = true;
             foreach (var comment in toImport.Comments)
             {
                 var body = String.Format("<i>{0}</i></br>Created by {1} on the {2}.<br>",
@@ -333,7 +334,13 @@ namespace TicketImporter
                     body = String.Format("{0}<br>(Last updated on the {1}).<br>", body,
                         comment.Updated.ToShortDateString());
                 }
+
+                if (!first)
+                {
+                    c.Append("<br>");
+                }
                 c.Append(body);
+                first = false;
             }
 
             if (c.Length > 0)

@@ -76,7 +76,8 @@ namespace TicketImporter
                         isSame = true;
                     }
                 }
-                else if (String.Compare(DisplayName, user, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0)
+
+                if (!isSame && String.Compare(DisplayName, user, CultureInfo.CurrentCulture, CompareOptions.IgnoreNonSpace) == 0)
                 {
                     isSame = true;
                 }

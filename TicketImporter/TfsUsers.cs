@@ -135,6 +135,23 @@ namespace TicketImporter
 
                 if (matched == false)
                 {
+                    // Find the TFS User using the email as matching data
+                    foreach (var user in this.tfsUsers)
+                    {
+                        var email = user.GetAttribute("Mail", null);
+
+                        // Check if both email match
+                        if (string.Compare(email, toAssign.eMail, StringComparison.CurrentCultureIgnoreCase) == 0)
+                        {
+                            assignedUser = user.DisplayName;
+                            matched = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (matched == false)
+                {
                     if (String.IsNullOrWhiteSpace(defaultAsignee) == false)
                     {
                         assignedUser = defaultAsignee;
