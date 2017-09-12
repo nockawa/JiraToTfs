@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
+using log4net.Core;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
 namespace TicketImporter
@@ -101,8 +102,17 @@ namespace TicketImporter
             }
         }
 
+        private int _reentrancy;
+
         private bool pathToDoneFrom(string searchFrom)
         {
+            if (_reentrancy>2)
+            {
+                return false;
+            }
+
+            ++_reentrancy;
+
             var foundPath = false;
 
             PathToDone.Add(searchFrom);
@@ -136,6 +146,7 @@ namespace TicketImporter
                 }
             }
 
+            --_reentrancy;
             return foundPath;
         }
 

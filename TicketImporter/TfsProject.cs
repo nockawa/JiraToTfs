@@ -321,58 +321,6 @@ namespace TicketImporter
                 }
             }
 
-            var c = new StringBuilder();
-            var first = true;
-            foreach (var comment in toImport.Comments)
-            {
-                var body = String.Format("<i>{0}</i></br>Created by {1} on the {2}.<br>",
-                    comment.Body.Replace(Environment.NewLine, "<br>"),
-                    comment.Author.DisplayName,
-                    comment.CreatedOn.ToShortDateString());
-                if (comment.UpdatedLater)
-                {
-                    body = String.Format("{0}<br>(Last updated on the {1}).<br>", body,
-                        comment.Updated.ToShortDateString());
-                }
-
-                if (!first)
-                {
-                    c.Append("<br>");
-                }
-                c.Append(body);
-                first = false;
-            }
-
-            if (c.Length > 0)
-            {
-                c.Append("<br>");
-            }
-            c.Append(string.Format("<u><b>Additional {0} information</b></u><br>", externalReferenceTag));
-
-            var rows = new List<Tuple<string, string>>
-            {
-                new Tuple<string, string>("Ticket",
-                    string.Format("<a href=\"{0}\">{1}</a>", toImport.Url, toImport.ID + " - " + toImport.Summary)),
-                new Tuple<string, string>("Created by ", toImport.CreatedBy.DisplayName),
-                new Tuple<string, string>("Created on ", toImport.CreatedOn.ToString(CultureInfo.InvariantCulture))
-            };
-            if (toImport.TicketState == Ticket.State.Done)
-            {
-                rows.Add(new Tuple<string, string>("Closed on ", toImport.ClosedOn.ToString(CultureInfo.InvariantCulture)));
-            }
-            if (string.IsNullOrWhiteSpace(toImport.Project) == false)
-            {
-                rows.Add(new Tuple<string, string>("Belonged To", toImport.Project));
-            }
-
-            c.Append("<table style=\"width:100%\">");
-            foreach (var row in rows)
-            {
-                c.Append(string.Format("<tr><td><b>{0}</b></td><td>{1}</td></tr>", row.Item1, row.Item2));
-            }
-            c.Append("</table>");
-            workItem.History = c.ToString();
-
             return workItem;
         }
 
@@ -644,7 +592,15 @@ namespace TicketImporter
                 var validationErrors = workItem.Validate();
                 if (validationErrors.Count == 0)
                 {
-                    workItem.Save(SaveFlags.MergeLinks);
+                    try
+                    {
+                        workItem.Save(SaveFlags.MergeLinks);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        break;
+                    }
                 }
                 else
                 {
@@ -691,7 +647,7 @@ namespace TicketImporter
                     }
                 }
             }
-            
+
             if (source.HasLinks)
             {
                 var workItemStore = (WorkItemStore) tfs.GetService(typeof (WorkItemStore));
@@ -764,6 +720,75 @@ namespace TicketImporter
                     return;
                 }
             }
+
+            //var c = new StringBuilder();
+            var first = true;
+            foreach (var comment in source.Comments)
+            {
+                //var body = String.Format("<i>{0}</i></br>Created by {1} on the {2}.<br>",
+                //    comment.Body.Replace(Environment.NewLine, "<br>"),
+                //    comment.Author.DisplayName,
+                //    comment.CreatedOn.ToShortDateString());
+                //if (comment.UpdatedLater)
+                //{
+                //    body = String.Format("{0}<br>(Last updated on the {1}).<br>", body,
+                //        comment.Updated.ToShortDateString());
+                //}
+
+                //if (!first)
+                //{
+                //    c.Append("<br>");
+                //}
+                //c.Append(body);
+                //first = false;
+
+                var tfs_impersonated = tfsUsers.ImpersonateDefaultCreator();
+                if (tfsUsers.CanAddTicket(source.CreatedBy))
+                {
+                    tfs_impersonated = tfsUsers.Impersonate(comment.Author);
+                }
+
+                var workItemStore = (WorkItemStore)tfs_impersonated.GetService(typeof(WorkItemStore));
+                var commentWI = workItemStore.GetWorkItem(workItem.Id);
+                commentWI.History = $"{comment.Body.Replace(Environment.NewLine, "<br>")}<br><i>Originally created the {comment.CreatedOn.ToShortDateString()} at {comment.CreatedOn.ToShortTimeString()}<i/>";
+                if (commentWI.IsValid())
+                {
+                    commentWI.Save();
+                }
+
+            }
+
+            workItem.SyncToLatest();
+
+            //if (c.Length > 0)
+            //{
+            //    c.Append("<br>");
+            //}
+            //c.Append(string.Format("<u><b>Additional {0} information</b></u><br>", externalReferenceTag));
+
+            //var rows = new List<Tuple<string, string>>
+            //{
+            //    new Tuple<string, string>("Ticket",
+            //        string.Format("<a href=\"{0}\">{1}</a>", source.Url, source.ID + " - " + source.Summary)),
+            //    new Tuple<string, string>("Created by ", source.CreatedBy.DisplayName),
+            //    new Tuple<string, string>("Created on ", source.CreatedOn.ToString(CultureInfo.InvariantCulture))
+            //};
+            //if (source.TicketState == Ticket.State.Done)
+            //{
+            //    rows.Add(new Tuple<string, string>("Closed on ", source.ClosedOn.ToString(CultureInfo.InvariantCulture)));
+            //}
+            //if (string.IsNullOrWhiteSpace(source.Project) == false)
+            //{
+            //    rows.Add(new Tuple<string, string>("Belonged To", source.Project));
+            //}
+
+            //c.Append("<table style=\"width:100%\">");
+            //foreach (var row in rows)
+            //{
+            //    c.Append(string.Format("<tr><td><b>{0}</b></td><td>{1}</td></tr>", row.Item1, row.Item2));
+            //}
+            //c.Append("</table>");
+            //workItem.History = c.ToString();
 
             updateWorkItemState(source, workItem);
         }
